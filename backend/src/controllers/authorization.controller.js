@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../lib/utils/utils.js";
+import { protectRoute } from "../middlewares/protectRoute.js";
+import cloudinary from "../lib/utils/cloudinary.config.js";
 
 export const signup = async (request, response) => {
   const { name, username, email, phone, password } = request.body;
@@ -96,17 +98,55 @@ export const login = async (request, response) => {
       message: "Logged in successfully",
     });
   } catch (error) {
-    console.error("Error in login controller: " + error.message);
+    console.log("Error in login controller: " + error.message);
     response.status(500).json({ message: "Server error" });
   }
 };
 
-export const logout = (request, response) => {
+export const logout = async (request, response) => {
   try {
     response.cookie("jwt", "", { maxAge: 0 });
     response.json({ message: "Logged out successfully" });
   } catch (error) {
-    console.error("Error in logout controller: " + error.message);
+    console.log("Error in logout controller: " + error.message);
+    response.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateProfile = async (request, response) => {
+  try {
+    const { avatar } = request.body();
+    const userId = request.user._id;
+
+    if (!avatar) {
+      return response.status(400).json({ message: "Missing profile picture" });
+    }
+
+    const uploadResponse = await cloudinary.uploader.upload(avatar);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        avatar: uploadResponse.secure_url,
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return response.status(404).json({ message: "User not found" });
+    }
+
+    response.status(200).json({ message: "User updated succesfully" });
+  } catch (error) {
+    console.log("Error in update profile controller: " + error.message);
+    response.status(500).json({ message: "Server error" });
+  }
+};
+
+export const checkout = (request, response) => {
+  try {
+    response.status(200).json(request.user);
+  } catch (error) {
+    console.log("Error in checkout controller: " + error.message);
     response.status(500).json({ message: "Server error" });
   }
 };
