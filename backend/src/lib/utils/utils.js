@@ -5,7 +5,7 @@ export const generateToken = (userId, response) => {
     expiresIn: "7d",
   });
 
-  response.cookie("token", jwttoken, {
+  response.cookie("jwttoken", jwttoken, {
     httpOnly: true, // prevent XSS attacks cross-site scripting attacks
     maxAge: 7 * 24 * 60 * 60 * 1000,
     sameSite: "strict", // do not allow cross-site scripting
