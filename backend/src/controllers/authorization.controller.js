@@ -107,7 +107,6 @@ export const login = async (request, response) => {
 
 
 export const logout = async (request, response) => {
-
   try {
     response.cookie("jwt", "", { maxAge: 0 });
     response.json({ message: "Logged out successfully" });
@@ -151,7 +150,6 @@ export const checkout = (request, response) => {
     response.status(200).json(request.user);
   } catch (error) {
     console.log("Error in checkout controller: " + error.message);
-
     response.status(500).json({ message: "Server error" });
   }
 };
