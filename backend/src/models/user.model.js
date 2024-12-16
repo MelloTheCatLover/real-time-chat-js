@@ -45,19 +45,16 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true, minLength: 6 },
-  address: { type: AddressSchema, required: true },
+  address: { type: AddressSchema, required: false },
   phone: { type: String, required: true },
-  website: { type: String, required: true },
-  company: { type: CompanySchema, required: true },
-  posts: { type: [PostSchema], required: true },
-  accountHistory: { type: [AccountHistorySchema], required: true },
+  website: { type: String, required: false },
+  company: { type: CompanySchema, required: false },
+  posts: { type: [PostSchema], required: false },
+  accountHistory: { type: [AccountHistorySchema], required: false },
   favorite: { type: Boolean, default: false },
-  avatar: { type: String, required: true },
-  id: { type: Number, unique: true },
+  avatar: { type: String, required: false },
 });
 
-// Создание модели
 const User = mongoose.model("User", UserSchema);
 
-// Экспорт модели
-module.exports = User;
+export default User;
