@@ -1,7 +1,6 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../lib/utils/utils.js";
-import { protectRoute } from "../middlewares/protectRoute.js";
 import cloudinary from "../lib/utils/cloudinary.config.js";
 
 export const signup = async (request, response) => {
@@ -43,7 +42,7 @@ export const signup = async (request, response) => {
       console.log("New User: " + newUser);
       await newUser.save();
       console.log("User saved successfully");
-      response.status(201).json({
+      return response.status(201).json({
         _id: newUser._id,
         username: newUser.username,
         name: newUser.name,
@@ -52,13 +51,13 @@ export const signup = async (request, response) => {
         message: "User created successfully",
       });
     } else {
-      response
+      return response
         .status(400)
         .json({ message: "Failed to create user. Invalid user data" });
     }
   } catch (error) {
-    response.status(500).json({ message: "Server error" });
     console.log("Error in signup controller: " + error.message);
+    return response.status(500).json({ message: "Server error" });
   }
 };
 
@@ -98,21 +97,19 @@ export const login = async (request, response) => {
       message: "Logged in successfully",
     });
   } catch (error) {
-
     console.log("Error in login controller: " + error.message);
 
-    response.status(500).json({ message: "Server error" });
+    return response.status(500).json({ message: "Server error" });
   }
 };
-
 
 export const logout = async (request, response) => {
   try {
     response.cookie("jwt", "", { maxAge: 0 });
-    response.json({ message: "Logged out successfully" });
+    return response.json({ message: "Logged out successfully" });
   } catch (error) {
     console.log("Error in logout controller: " + error.message);
-    response.status(500).json({ message: "Server error" });
+    return response.status(500).json({ message: "Server error" });
   }
 };
 
@@ -138,16 +135,16 @@ export const updateProfile = async (request, response) => {
       return response.status(404).json({ message: "User not found" });
     }
 
-    response.status(200).json({ message: "User updated succesfully" });
+    return response.status(200).json({ message: "User updated succesfully" });
   } catch (error) {
     console.log("Error in update profile controller: " + error.message);
-    response.status(500).json({ message: "Server error" });
+    return response.status(500).json({ message: "Server error" });
   }
 };
 
 export const checkout = (request, response) => {
   try {
-    response.status(200).json(request.user);
+    return response.status(200).json(request.user);
   } catch (error) {
     console.log("Error in checkout controller: " + error.message);
     response.status(500).json({ message: "Server error" });

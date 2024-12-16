@@ -6,15 +6,16 @@ import {
   updateProfile,
   checkout,
 } from "../controllers/authorization.controller.js";
+import { protectRoute } from "../middlewares/protectRoute.js";
 
 export const router = express.Router();
 
 router.post("/signup", signup);
 
-router.post("/logout", logout);
+router.post("/logout", protectRoute, logout);
 
 router.post("/login", login);
 
-router.put("/update-profile", updateProfile);
+router.put("/update-profile", protectRoute, updateProfile);
 
-router.get("/checkout", checkout);
+router.get("/checkout", protectRoute, checkout);
