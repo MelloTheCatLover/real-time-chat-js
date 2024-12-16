@@ -98,10 +98,13 @@ export const login = async (request, response) => {
       message: "Logged in successfully",
     });
   } catch (error) {
+
     console.log("Error in login controller: " + error.message);
+
     response.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const logout = async (request, response) => {
   try {
