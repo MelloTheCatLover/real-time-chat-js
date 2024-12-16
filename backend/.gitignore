@@ -1,4 +1,4 @@
-# Node modules
+git log --oneline --graph --all# Node modules
 node_modules/
 
 # Logs
