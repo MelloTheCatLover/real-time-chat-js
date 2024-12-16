@@ -14,13 +14,14 @@ export const signup = async (request, response) => {
         .json({ message: "Password must be at least 6 characters long" });
     }
     console.log("Password: " + password);
-    user = await User.findOne({ username });
+    const user = await User.findOne({
+      $or: [{ username }, { email }],
+    });
+
     if (user) {
-      return response.status(400).json({ message: "User already exists" });
-    }
-    user = await User.findOne({ email });
-    if (user) {
-      return response.status(400).json({ message: "User already exists" });
+      return response
+        .status(400)
+        .json({ message: "User with this username or email already exists" });
     }
     console.log("User: " + user);
     const salt = await bcrypt.genSalt(10);
@@ -59,10 +60,53 @@ export const signup = async (request, response) => {
   }
 };
 
-export const login = (request, response) => {
-  console.log("Login Pag");
+export const login = async (request, response) => {
+  try {
+    const { username, email, password } = request.body;
+    if ((!username && !email) || !password) {
+      return response.status(400).json({ message: "Missing required fields" });
+    }
+    let user;
+    if (username && email) {
+      user = await User.findOne({
+        $and: [{ username }, { email }],
+      });
+    } else if (!user) {
+      user = await User.findOne({
+        $or: [{ username }, { email }],
+      });
+    }
+    if (!user) {
+      return response.status(404).json({ message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return response.status(400).json({ message: "Invalid credentials" });
+    }
+
+    generateToken(user._id, response);
+    response.json({
+      _id: user._id,
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      message: "Logged in successfully",
+    });
+  } catch (error) {
+    console.error("Error in login controller: " + error.message);
+    response.status(500).json({ message: "Server error" });
+  }
 };
 
 export const logout = (request, response) => {
-  console.log("Logout Pag");
+  try {
+    response.cookie("jwt", "", { maxAge: 0 });
+    response.json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Error in logout controller: " + error.message);
+    response.status(500).json({ message: "Server error" });
+  }
 };
