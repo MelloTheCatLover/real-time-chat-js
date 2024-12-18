@@ -1,9 +1,19 @@
 import express from "express";
+import {
+  createIndividualChat,
+  createGroupChat,
+  getAllChats,
+  sendMessage,
+  getMessages,
+} from "../controllers/chats.controller.js";
 import { protectRoute } from "../middlewares/protectRoute.js";
-import { createIndividualChat } from "../controllers/chats.controllers.js";
 
 export const router = express.Router();
 
 router.post("/chats/createIndividualChat", protectRoute, createIndividualChat);
+router.post("/chats/createIndividualChat", protectRoute, createIndividualChat);
+router.post("/chats/createGroupChat", protectRoute, createGroupChat);
+router.get("/chats", protectRoute, getAllChats);
 
-router.get("/chats", protectRoute);
+router.post("/messages", protectRoute, sendMessage);
+router.post("/getMessages", protectRoute, getMessages);

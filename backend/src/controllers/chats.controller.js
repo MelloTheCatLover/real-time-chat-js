@@ -1,3 +1,4 @@
+import { request } from "express";
 import Chat from "../models/chat.model.js";
 
 export const createIndividualChat = async (request, response) => {
@@ -119,5 +120,78 @@ export const getAllChats = async (request, response) => {
   } catch (error) {
     console.log("Error in getAllChats controller:", error.message);
     response.status(500).json({ message: "Server error" });
+  }
+};
+
+export const sendMessage = async (request, response) => {
+  const { receiver, content, chat, type, mediaUrl } = request.body;
+
+  const currentUserId = request.user._id;
+
+  try {
+    if (!receiver || !content || !chat) {
+      return response.status(400).json({ message: "Missing required fields" });
+    }
+
+    let imageUrl;
+    if (type === "image") {
+      const uploadResponse = await cloudinary.uploader.upload(content);
+      imageUrl = uploadResponse.secure_url;
+    }
+
+    const newMessage = new Message({
+      currentUserId,
+      receiver,
+      content: chat,
+      type,
+      mediaUrl: imageUrl,
+    });
+
+    const savedMessage = await newMessage.save();
+
+    await Chat.findByIdAndUpdate(
+      chat,
+      { latestMessage: savedMessage._id },
+      { new: true }
+    );
+
+    const populatedMessage = await Message.findById(savedMessage._id)
+      .populate("sender", "name username")
+      .populate("receiver", "name username")
+      .populate("chat");
+
+    res.status(201).json({
+      message: "Message sent successfully!",
+      data: populatedMessage,
+    });
+  } catch (error) {
+    console.log("Error in sendMessage controller:", error.message);
+    response.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getMessages = async (request, response) => {
+  const { chatId } = request.params;
+  const { limit = 20, skip = 0 } = req.query;
+
+  try {
+    if (!chatId) {
+      return response.status(400).json({ message: "Chat ID is required" });
+    }
+
+    const messages = await Message.find({ chat: chatId })
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(parseInt(skip))
+      .populate("sender", "name username")
+      .populate("receiver", "name username")
+      .populate("chat");
+
+    return response
+      .status(200)
+      .json({ messages, message: "Messages retrieved successfully" });
+  } catch (error) {
+    console.log("Error in getMessages controller:", error.message);
+    return response.status(500).json({ message: "Server error" });
   }
 };
